@@ -100,6 +100,8 @@ Module={
     let f_cy = 0;
     let last_image_data;
     let last_mupp, last_cx, last_cy;
+    let start = 0;
+    let end = 0;
 
     let projectLoaded = false;
     function render_canvas() {
@@ -124,6 +126,9 @@ Module={
         let c = document.getElementById("canvas");
         let ctx = c.getContext("2d");
         ctx.putImageData(last_image_data, 0, 0);
+        end = performance.now()
+        console.log('end:', end)
+        console.log('time:', end - start)
     }
 
     function update_last_image() {
@@ -149,11 +154,10 @@ Module={
         setTimeout(function() {
 
             console.log("init qgis");
-            console.log( Module.ccall('mr_init_qgis', // name of C function
-                            'number', // return type
-                            [], // argument types
-                            []) // argument values
-                        );
+            Module.ccall('mr_init_qgis', // name of C function
+                'number', // return type
+                [], // argument types
+                []) // argument values
 
             console.log("loading project " + filename);
             console.log( Module.ccall('mr_load_project', 'number', ['string'], [filename]) );
@@ -177,7 +181,6 @@ Module={
         // then load the QGIS project (should be the first file in files.json)
 
         fetch(dirname + '/files.json').then((response) => response.json().then((fileList) => {
-            //console.log(fileList);
             let urls = [];
             for(let filename of fileList) {
                 let url = dirname + "/" + filename;
@@ -193,7 +196,6 @@ Module={
             });
 
             Promise.all(promises).then((arrayBuffers) => {
-                //console.log("got results " + arrayBuffers);
                 FS.mkdir(dirname);
                 arrayBuffers.forEach( (arrayBuffer, index) => {
                     let res = FS.writeFile(urls[index], new Uint8Array(arrayBuffer));
@@ -213,13 +215,14 @@ Module={
         if (projectName == null)
             projectName = 'village';  // default project
 
+        start = performance.now()
+        console.log('start:', start)
         fetch_project_files(projectName);
 
         // a hack to avoid a bunch exceptions (somehow triggered by QSettings it seems)
         // maybe emscripten bug, not sure
         let old_exists_file = IDBStore.existsFile;
         IDBStore.existsFile = function(dbName,id,callback) {
-            console.log(dbName);
             if (dbName == "/home/web_user") ///.config/QGIS/qgis4wasm.conf")
                 return true;  // todo: or false? or does it matter?
             else

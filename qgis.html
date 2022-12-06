@@ -129,6 +129,7 @@ Module={
         end = performance.now()
         console.log('end:', end)
         console.log('time:', end - start)
+        start = end;
     }
 
     function update_last_image() {
@@ -160,7 +161,7 @@ Module={
                 []) // argument values
 
             console.log("loading project " + filename);
-            console.log( Module.ccall('mr_load_project', 'number', ['string'], [filename]) );
+            Module.ccall('mr_load_project', 'number', ['string'], [filename])
 
             f_mupp = Module.ccall('mr_full_extent_mupp', 'number', [], []);
             f_cx = Module.ccall('mr_full_extent_center_x', 'number', [], []);

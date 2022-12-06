@@ -1,0 +1,2 @@
+## wasm
+QGIS4wasm
